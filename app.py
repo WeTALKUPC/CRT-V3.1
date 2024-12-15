@@ -14,7 +14,7 @@ try:
     # Leer el archivo Excel directamente desde la URL
     data = pd.read_excel(url_excel, engine="openpyxl")
 
-    # Mostrar los datos
+    # Mostrar los datos en una tabla interactiva
     st.subheader("Datos cargados del archivo:")
     st.dataframe(data)
 
