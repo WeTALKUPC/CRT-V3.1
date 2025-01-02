@@ -48,7 +48,47 @@ if anio != "Por favor seleccione un año":
         data_combinada["REEMPLAZOS REALIZADOS"] = data_combinada["REEMPLAZOS REALIZADOS"].fillna(0)
         data_combinada["% CUMPLIMIENTO"] = 100 - (data_combinada["REEMPLAZOS REALIZADOS"] / data_combinada["CLASES TOTALES 2024"]) * 100
 
-        # Sección de gráficos
+        # Crear un diccionario para relacionar nombres y usuarios
+        usuarios_a_nombres = dict(zip(data_combinada["USUARIO INSTRUCTOR TITULAR"], data_combinada["NOMBRE INSTRUCTOR"]))
+
+        # Filtros de búsqueda
+        st.subheader("Filtros de Búsqueda")
+        nombres_instructores = sorted(data_combinada["NOMBRE INSTRUCTOR"].dropna().unique().tolist())
+        termino_busqueda = st.text_input("Escribe el nombre del instructor:")
+        coincidencias = [nombre for nombre in nombres_instructores if termino_busqueda.lower() in nombre.lower()]
+        seleccion_nombre = st.selectbox("Selecciona un instructor de la lista:", ["Seleccione un instructor"] + coincidencias)
+
+        if seleccion_nombre != "Seleccione un instructor":
+            usuario_seleccionado = {v: k for k, v in usuarios_a_nombres.items()}.get(seleccion_nombre)
+            datos_instructor = data_combinada[data_combinada["USUARIO INSTRUCTOR TITULAR"] == usuario_seleccionado]
+            datos_instructor = datos_instructor.rename(columns={
+                "USUARIO INSTRUCTOR TITULAR": "USUARIO INSTRUCTOR",
+                "CLASES TOTALES 2024": "CLASES 2024",
+                "REEMPLAZOS REALIZADOS": "REEMPLAZOS SOLICITADOS"
+            })
+
+            st.markdown(f"<h2 style='text-align: center;'>Cumplimiento Anual del Instructor: {seleccion_nombre}</h2>", unsafe_allow_html=True)
+            col1, col2 = st.columns([3, 2])
+            with col1:
+                st.dataframe(datos_instructor[["USUARIO INSTRUCTOR", "CLASES 2024", "REEMPLAZOS SOLICITADOS", "% CUMPLIMIENTO"]])
+            with col2:
+                reemplazos = datos_instructor["REEMPLAZOS SOLICITADOS"].iloc[0]
+                cumplimiento = datos_instructor["CLASES 2024"].iloc[0] - reemplazos
+                fig = px.pie(
+                    names=["Clases Cumplidas", "Reemplazos Solicitados"],
+                    values=[cumplimiento, reemplazos],
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+            st.subheader("Detalle de Reemplazos Solicitados")
+            detalle_reemplazos = data_reemplazos[data_reemplazos["USUARIO INSTRUCTOR TITULAR"] == usuario_seleccionado]
+            detalle_reemplazos["FECHA DE CLASE"] = detalle_reemplazos["FECHA DE CLASE"].dt.date
+            detalle_reemplazos = detalle_reemplazos.rename(columns={
+                "USUARIO INSTRUCTOR REEMPLAZANTE": "USUARIO"
+            }).drop(columns=["USUARIO INSTRUCTOR TITULAR"], errors="ignore")
+            st.dataframe(detalle_reemplazos, use_container_width=True)
+
+        # Gráficos
         st.subheader(f"Gráficos {anio}")
         opciones_graficos = ["Seleccione un gráfico", "Reemplazos por Mes", "Reemplazos por Programa", "Reemplazos por Motivo"]
         grafico_seleccionado = st.selectbox("Selecciona un gráfico:", opciones_graficos)
@@ -73,12 +113,7 @@ if anio != "Por favor seleccione un año":
                     marker=dict(color=px.colors.qualitative.Vivid)
                 )
             ])
-            fig.update_layout(
-                title="Reemplazos Atendidos por Mes",
-                xaxis_title="Mes",
-                yaxis_title="Cantidad de Reemplazos",
-                showlegend=False
-            )
+            fig.update_layout(title="Reemplazos Atendidos por Mes", xaxis_title="Mes", yaxis_title="Cantidad de Reemplazos", showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
 
         elif grafico_seleccionado == "Reemplazos por Programa":
