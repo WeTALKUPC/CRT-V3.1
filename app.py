@@ -113,7 +113,8 @@ if anio_seleccionado != "Por favor seleccione un año":
             })
             total_anual = reemplazos_por_mes['CANTIDAD'].sum()
             reemplazos_por_mes['PORCENTAJE'] = (reemplazos_por_mes['CANTIDAD'] / total_anual) * 100
-            fig = go.Figure(data=[go.Bar(x=reemplazos_por_mes['MES'], y=reemplazos_por_mes['CANTIDAD'], text=[f"{c}<br>{p:.1f}%" for c, p in zip(reemplazos_por_mes['CANTIDAD'], reemplazos_por_mes['PORCENTAJE'])], textposition='auto', marker=dict(color=px.colors.qualitative.Set2))])
+            colores_pastel = px.colors.qualitative.Pastel
+            fig = go.Figure(data=[go.Bar(x=reemplazos_por_mes['MES'], y=reemplazos_por_mes['CANTIDAD'], text=[f"{c}<br>{p:.1f}%" for c, p in zip(reemplazos_por_mes['CANTIDAD'], reemplazos_por_mes['PORCENTAJE'])], textposition='auto', marker=dict(color=colores_pastel))])
             fig.update_layout(title=f"Reemplazos Atendidos por Mes en {anio_seleccionado}", xaxis_title="Mes", yaxis_title="Cantidad de Reemplazos", template="simple_white", showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
 
