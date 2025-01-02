@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# Configurar el diseño en ancho completo
+st.set_page_config(layout="wide")
+
 # Título de la aplicación
 st.title("Dashboard de Cumplimiento por Feriado, Programa e Instructor")
 
@@ -70,8 +73,8 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
             "REEMPLAZOS REALIZADOS": "REEMPLAZOS SOLICITADOS"
         })
 
-        # Mostrar el cumplimiento anual y el gráfico circular en la misma fila
-        col1, col2 = st.columns(2)
+        # Mostrar el cumplimiento anual y el gráfico circular en la misma fila con más espacio
+        col1, col2 = st.columns([3, 2])  # Ajustar proporciones de las columnas
 
         with col1:
             st.subheader(f"Cumplimiento Anual del Instructor: {seleccion_nombre}")
@@ -85,7 +88,7 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
                 values=[cumplimiento, reemplazos],
                 title=f"Cumplimiento Anual de {seleccion_nombre}"
             )
-            st.plotly_chart(fig)
+            st.plotly_chart(fig, use_container_width=True)
 
         # Mostrar detalle de reemplazos solicitados debajo
         st.subheader("Detalle de Reemplazos Solicitados")
@@ -104,7 +107,7 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
             "HORA INICIO DE CLASE", "HORA FIN DE CLASE", "INSTRUCTOR TITULAR", "USUARIO INSTRUCTOR TITULAR"
         ], errors="ignore")
 
-        st.dataframe(detalle_reemplazos)
+        st.dataframe(detalle_reemplazos, use_container_width=True)
 
 else:
     st.warning("No se pudieron cargar los datos. Por favor, verifica los archivos.")
