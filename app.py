@@ -88,6 +88,14 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
         st.subheader("Detalle de Reemplazos Solicitados")
         detalle_reemplazos = data_reemplazos[data_reemplazos["USUARIO INSTRUCTOR TITULAR"] == usuario_seleccionado]
 
+        # Modificar la columna de fecha para eliminar el tiempo
+        detalle_reemplazos["FECHA DE CLASE"] = detalle_reemplazos["FECHA DE CLASE"].dt.date
+
+        # Renombrar columna "USUARIO INSTRUCTOR REEMPLAZANTE" a "USUARIO"
+        detalle_reemplazos = detalle_reemplazos.rename(columns={
+            "USUARIO INSTRUCTOR REEMPLAZANTE": "USUARIO"
+        })
+
         # Eliminar columnas no deseadas
         detalle_reemplazos = detalle_reemplazos.drop(columns=[
             "HORA INICIO DE CLASE", "HORA FIN DE CLASE", "INSTRUCTOR TITULAR", "USUARIO INSTRUCTOR TITULAR"
