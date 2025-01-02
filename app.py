@@ -24,7 +24,7 @@ urls = {
     }
 }
 
-# Funciones para cargar los datos
+# Función para cargar datos desde un archivo Excel
 @st.cache_data
 def cargar_datos(url):
     try:
@@ -88,7 +88,7 @@ if anio_seleccionado != "Seleccione un año":
             col1, col2 = st.columns([3, 2])
 
             with col1:
-                st.dataframe(datos_instructor)
+                st.dataframe(datos_instructor[["USUARIO INSTRUCTOR TITULAR", "CLASES TOTALES 2024", "REEMPLAZOS REALIZADOS", "% CUMPLIMIENTO"]])
 
             with col2:
                 fig = px.pie(
@@ -97,6 +97,14 @@ if anio_seleccionado != "Seleccione un año":
                             datos_instructor["REEMPLAZOS REALIZADOS"].iloc[0]],
                 )
                 st.plotly_chart(fig, use_container_width=True)
+
+            # Mostrar detalle de reemplazos
+            st.subheader("Detalle de Reemplazos Solicitados")
+            detalle_reemplazos = data_reemplazos[data_reemplazos["USUARIO INSTRUCTOR TITULAR"] == usuario_seleccionado]
+            detalle_reemplazos = detalle_reemplazos.drop(columns=[
+                "HORA INICIO DE CLASE", "HORA FIN DE CLASE", "INSTRUCTOR TITULAR"
+            ], errors="ignore")
+            st.dataframe(detalle_reemplazos)
 
         # Gráficos generales
         st.subheader(f"Gráficos {anio_seleccionado}")
