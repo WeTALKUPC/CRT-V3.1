@@ -46,20 +46,25 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
     # Calcular el porcentaje de cumplimiento
     data_combinada["% CUMPLIMIENTO"] = 100 - (data_combinada["REEMPLAZOS REALIZADOS"] / data_combinada["CLASES TOTALES 2024"]) * 100
 
+    # Crear un diccionario para relacionar nombres y usuarios
+    usuarios_a_nombres = dict(zip(data_combinada["USUARIO INSTRUCTOR TITULAR"], data_combinada["NOMBRE INSTRUCTOR"]))
+
     # Crear filtros
     st.subheader("Filtros de Búsqueda")
 
-    # Filtro de instructor titular
-    instructores = ["Seleccione un instructor"] + sorted(data_combinada["USUARIO INSTRUCTOR TITULAR"].dropna().unique().tolist())
-    seleccion_instructor = st.selectbox("Selecciona un instructor titular:", instructores)
+    # Filtro de instructor titular con nombres visibles
+    nombres_instructores = ["Seleccione un instructor"] + sorted(data_combinada["NOMBRE INSTRUCTOR"].dropna().unique().tolist())
+    seleccion_nombre = st.selectbox("Selecciona un instructor titular:", nombres_instructores)
 
-    # Mostrar resultados solo si se selecciona un instructor
-    if seleccion_instructor != "Seleccione un instructor":
+    # Obtener el usuario del instructor seleccionado
+    if seleccion_nombre != "Seleccione un instructor":
+        usuario_seleccionado = {v: k for k, v in usuarios_a_nombres.items()}.get(seleccion_nombre)
+
         # Filtrar los datos para el instructor seleccionado
-        datos_instructor = data_combinada[data_combinada["USUARIO INSTRUCTOR TITULAR"] == seleccion_instructor]
+        datos_instructor = data_combinada[data_combinada["USUARIO INSTRUCTOR TITULAR"] == usuario_seleccionado]
 
         # Mostrar los datos filtrados del instructor
-        st.subheader(f"Cumplimiento Anual del Instructor: {seleccion_instructor}")
+        st.subheader(f"Cumplimiento Anual del Instructor: {seleccion_nombre}")
         st.dataframe(datos_instructor)
 
         # Crear gráfico circular del cumplimiento anual
@@ -68,7 +73,7 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
         fig = px.pie(
             names=["Clases Cumplidas", "Reemplazos Realizados"],
             values=[cumplimiento, reemplazos],
-            title=f"Cumplimiento Anual de {seleccion_instructor}"
+            title=f"Cumplimiento Anual de {seleccion_nombre}"
         )
         st.plotly_chart(fig)
 
