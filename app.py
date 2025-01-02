@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 import plotly.express as px
 
 # Configurar el diseño en ancho completo
@@ -55,7 +56,7 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
     # Crear un diccionario para relacionar nombres y usuarios
     usuarios_a_nombres = dict(zip(data_combinada["USUARIO INSTRUCTOR TITULAR"], data_combinada["NOMBRE INSTRUCTOR"]))
 
-    # [SECCIÓN FUNCIONALIDADES EXISTENTES]
+    # Crear filtros
     st.subheader("Filtros de Búsqueda")
 
     # Opciones de búsqueda
@@ -126,38 +127,43 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
 
         st.dataframe(detalle_reemplazos, use_container_width=True)
 
-    # NUEVA SECCIÓN: GRÁFICOS 2024
+    # Sección de gráficos
     st.subheader("Gráficos 2024")
-    opciones_graficos = ["Seleccione un gráfico", "Reemplazos por Mes", "Reemplazos por Programa"]
-    seleccion_grafico = st.selectbox("Selecciona un gráfico:", opciones_graficos)
+    opciones_graficos = ["Seleccione un gráfico", "Reemplazos por Mes"]
+    grafico_seleccionado = st.selectbox("Selecciona un gráfico:", opciones_graficos)
 
-    if seleccion_grafico == "Reemplazos por Mes":
-        # Agregar columna de mes
-        data_reemplazos["MES"] = data_reemplazos["FECHA DE CLASE"].dt.month
-        reemplazos_por_mes = data_reemplazos["MES"].value_counts().sort_index()
-        
-        # Crear gráfico de barras
-        fig_mes = px.bar(
-            reemplazos_por_mes,
-            x=reemplazos_por_mes.index,
-            y=reemplazos_por_mes.values,
-            labels={"x": "Mes", "y": "Cantidad de Reemplazos"},
+    if grafico_seleccionado == "Reemplazos por Mes":
+        data_reemplazos['MES'] = data_reemplazos['FECHA DE CLASE'].dt.month
+        reemplazos_por_mes = data_reemplazos.groupby('MES').size().reset_index(name='CANTIDAD')
+        reemplazos_por_mes['MES'] = reemplazos_por_mes['MES'].replace({
+            1: 'ENERO', 2: 'FEBRERO', 3: 'MARZO', 4: 'ABRIL', 5: 'MAYO', 6: 'JUNIO',
+            7: 'JULIO', 8: 'AGOSTO', 9: 'SEPTIEMBRE', 10: 'OCTUBRE', 11: 'NOVIEMBRE', 12: 'DICIEMBRE'
+        })
+
+        # Calcular el total anual para los porcentajes
+        total_anual = reemplazos_por_mes['CANTIDAD'].sum()
+        reemplazos_por_mes['PORCENTAJE'] = (reemplazos_por_mes['CANTIDAD'] / total_anual) * 100
+
+        # Crear el gráfico de barras
+        fig = go.Figure(data=[
+            go.Bar(
+                x=reemplazos_por_mes['MES'],
+                y=reemplazos_por_mes['CANTIDAD'],
+                text=[f"{c}<br>{p:.1f}%" for c, p in zip(reemplazos_por_mes['CANTIDAD'], reemplazos_por_mes['PORCENTAJE'])],
+                textposition='outside',
+                marker=dict(color='blue')
+            )
+        ])
+
+        fig.update_layout(
             title="Reemplazos Atendidos por Mes en 2024",
+            xaxis_title="Mes",
+            yaxis_title="Cantidad de Reemplazos",
+            template="simple_white",
+            showlegend=False
         )
-        st.plotly_chart(fig_mes, use_container_width=True)
 
-    elif seleccion_grafico == "Reemplazos por Programa":
-        # Contar reemplazos por programa
-        reemplazos_por_programa = data_reemplazos["PROGRAMA"].value_counts()
-        
-        # Crear gráfico circular
-        fig_programa = px.pie(
-            reemplazos_por_programa,
-            names=reemplazos_por_programa.index,
-            values=reemplazos_por_programa.values,
-            title="Reemplazos por Programa en 2024",
-        )
-        st.plotly_chart(fig_programa, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
 
 else:
     st.warning("No se pudieron cargar los datos. Por favor, verifica los archivos.")
