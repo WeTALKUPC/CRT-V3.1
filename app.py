@@ -70,21 +70,24 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
             "REEMPLAZOS REALIZADOS": "REEMPLAZOS SOLICITADOS"
         })
 
-        # Mostrar el cuadro con cumplimiento anual
-        st.subheader(f"Cumplimiento Anual del Instructor: {seleccion_nombre}")
-        st.dataframe(datos_instructor[["USUARIO INSTRUCTOR", "CLASES 2024", "REEMPLAZOS SOLICITADOS", "% CUMPLIMIENTO"]])
+        # Mostrar el cumplimiento anual y el gráfico circular en la misma fila
+        col1, col2 = st.columns(2)
 
-        # Crear gráfico circular del cumplimiento anual
-        reemplazos = datos_instructor["REEMPLAZOS SOLICITADOS"].iloc[0]
-        cumplimiento = datos_instructor["CLASES 2024"].iloc[0] - reemplazos
-        fig = px.pie(
-            names=["Clases Cumplidas", "Reemplazos Solicitados"],
-            values=[cumplimiento, reemplazos],
-            title=f"Cumplimiento Anual de {seleccion_nombre}"
-        )
-        st.plotly_chart(fig)
+        with col1:
+            st.subheader(f"Cumplimiento Anual del Instructor: {seleccion_nombre}")
+            st.dataframe(datos_instructor[["USUARIO INSTRUCTOR", "CLASES 2024", "REEMPLAZOS SOLICITADOS", "% CUMPLIMIENTO"]])
 
-        # Mostrar detalle de reemplazos solicitados
+        with col2:
+            reemplazos = datos_instructor["REEMPLAZOS SOLICITADOS"].iloc[0]
+            cumplimiento = datos_instructor["CLASES 2024"].iloc[0] - reemplazos
+            fig = px.pie(
+                names=["Clases Cumplidas", "Reemplazos Solicitados"],
+                values=[cumplimiento, reemplazos],
+                title=f"Cumplimiento Anual de {seleccion_nombre}"
+            )
+            st.plotly_chart(fig)
+
+        # Mostrar detalle de reemplazos solicitados debajo
         st.subheader("Detalle de Reemplazos Solicitados")
         detalle_reemplazos = data_reemplazos[data_reemplazos["USUARIO INSTRUCTOR TITULAR"] == usuario_seleccionado]
 
