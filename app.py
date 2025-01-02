@@ -167,48 +167,30 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
 
     elif grafico_seleccionado == "Reemplazos por Programa":
         reemplazos_por_programa = data_reemplazos.groupby("PROGRAMA").size().reset_index(name="CANTIDAD")
-        reemplazos_por_programa['PORCENTAJE'] = (reemplazos_por_programa['CANTIDAD'] / reemplazos_por_programa['CANTIDAD'].sum()) * 100
 
-        fig = go.Figure(data=[
-            go.Bar(
-                x=reemplazos_por_programa['PROGRAMA'],
-                y=reemplazos_por_programa['CANTIDAD'],
-                text=[f"{c}<br>{p:.1f}%" for c, p in zip(reemplazos_por_programa['CANTIDAD'], reemplazos_por_programa['PORCENTAJE'])],
-                textposition='outside',
-                marker=dict(color='green')
-            )
-        ])
-        fig.update_layout(
-            title="Reemplazos Atendidos por Programa en 2024",
-            xaxis_title="Programa",
-            yaxis_title="Cantidad de Reemplazos",
-            template="simple_white",
-            showlegend=False
+        fig = px.bar(
+            reemplazos_por_programa,
+            x="PROGRAMA",
+            y="CANTIDAD",
+            color="PROGRAMA",
+            title="Reemplazos por Programa en 2024",
+            text="CANTIDAD",
         )
-
+        fig.update_traces(textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
     elif grafico_seleccionado == "Reemplazos por Motivo":
-        reemplazos_por_motivo = data_reemplazos.groupby("MOTIVO").size().reset_index(name="CANTIDAD")
-        reemplazos_por_motivo['PORCENTAJE'] = (reemplazos_por_motivo['CANTIDAD'] / reemplazos_por_motivo['CANTIDAD'].sum()) * 100
+        reemplazos_por_motivo = data_reemplazos.groupby("MOTIVO DE REEMPLAZO").size().reset_index(name="CANTIDAD")
 
-        fig = go.Figure(data=[
-            go.Bar(
-                x=reemplazos_por_motivo['MOTIVO'],
-                y=reemplazos_por_motivo['CANTIDAD'],
-                text=[f"{c}<br>{p:.1f}%" for c, p in zip(reemplazos_por_motivo['CANTIDAD'], reemplazos_por_motivo['PORCENTAJE'])],
-                textposition='outside',
-                marker=dict(color='orange')
-            )
-        ])
-        fig.update_layout(
-            title="Reemplazos Atendidos por Motivo en 2024",
-            xaxis_title="Motivo",
-            yaxis_title="Cantidad de Reemplazos",
-            template="simple_white",
-            showlegend=False
+        fig = px.bar(
+            reemplazos_por_motivo,
+            x="MOTIVO DE REEMPLAZO",
+            y="CANTIDAD",
+            color="MOTIVO DE REEMPLAZO",
+            title="Reemplazos por Motivo en 2024",
+            text="CANTIDAD",
         )
-
+        fig.update_traces(textposition='outside')
         st.plotly_chart(fig, use_container_width=True)
 
 else:
