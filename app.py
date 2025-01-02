@@ -81,16 +81,5 @@ if not data_reemplazos.empty:
         st.subheader("Cumplimiento Anual por Instructor")
         st.dataframe(data_combinada)
 
-        # Agregar opción para descargar los resultados
-        @st.cache_data
-        def convertir_a_excel(df):
-            return df.to_excel(index=False, engine="openpyxl")
-
-        st.download_button(
-            label="Descargar Resultados en Excel",
-            data=convertir_a_excel(data_combinada),
-            file_name="cumplimiento_anual_instructores.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
 else:
     st.warning("No se pudo cargar el archivo de reemplazos. Por favor, verifica la URL o el archivo Excel.")
