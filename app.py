@@ -150,7 +150,7 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
                 x=reemplazos_por_mes['MES'],
                 y=reemplazos_por_mes['CANTIDAD'],
                 text=[f"{c}<br>{p:.1f}%" for c, p in zip(reemplazos_por_mes['CANTIDAD'], reemplazos_por_mes['PORCENTAJE'])],
-                textposition='outside',
+                textposition='auto',
                 marker=dict(color='blue')
             )
         ])
@@ -176,7 +176,7 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
             title="Reemplazos por Programa en 2024",
             text="CANTIDAD",
         )
-        fig.update_traces(textposition='outside')
+        fig.update_traces(textposition='auto')
         st.plotly_chart(fig, use_container_width=True)
 
     elif grafico_seleccionado == "Reemplazos por Motivo":
@@ -190,7 +190,7 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
             title="Reemplazos por Motivo en 2024",
             text="CANTIDAD",
         )
-        fig.update_traces(textposition='outside')
+        fig.update_traces(textposition='auto')
         st.plotly_chart(fig, use_container_width=True)
 
 else:
