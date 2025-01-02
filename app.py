@@ -4,37 +4,48 @@ import pandas as pd
 # Título de la aplicación
 st.title("Dashboard de Cumplimiento por Feriado, Programa e Instructor")
 
-# URL del archivo Excel en GitHub (raw)
-url_excel = "https://raw.githubusercontent.com/WeTALKUPC/CRT-V3.1/main/CONSOLIDADO%20REEMPLAZOS%202024%20V2.xlsx"
+# URLs de los archivos Excel en GitHub (raw)
+url_reemplazos = "https://raw.githubusercontent.com/WeTALKUPC/CRT-V3.1/main/CONSOLIDADO%20REEMPLAZOS%202024%20V2.xlsx"
+url_clases_totales = "https://raw.githubusercontent.com/WeTALKUPC/CRT-V3.1/main/CONSOLIDADO%20CLASES%202024%20V2.xlsx"
 
-# Cargar el archivo Excel
+# Función para cargar los datos
 @st.cache_data
-def cargar_datos():
+def cargar_datos_reemplazos():
     try:
-        data = pd.read_excel(url_excel, engine="openpyxl")
+        data = pd.read_excel(url_reemplazos, engine="openpyxl")
         return data
     except Exception as e:
-        st.error(f"Error al cargar el archivo: {e}")
+        st.error(f"Error al cargar el archivo de reemplazos: {e}")
+        return pd.DataFrame()
+
+@st.cache_data
+def cargar_datos_clases():
+    try:
+        data = pd.read_excel(url_clases_totales, engine="openpyxl")
+        return data
+    except Exception as e:
+        st.error(f"Error al cargar el archivo de clases totales: {e}")
         return pd.DataFrame()
 
 # Cargar los datos
-data = cargar_datos()
+data_reemplazos = cargar_datos_reemplazos()
+data_clases_totales = cargar_datos_clases()
 
-# Verificar si el archivo se cargó correctamente
-if not data.empty:
+# Verificar si el archivo de reemplazos se cargó correctamente
+if not data_reemplazos.empty:
     # Crear los filtros
     st.subheader("Filtros de Búsqueda")
 
     # Filtro de instructor titular
-    instructores = ["TODOS"] + sorted(data["INSTRUCTOR TITULAR"].dropna().unique().tolist())
+    instructores = ["TODOS"] + sorted(data_reemplazos["INSTRUCTOR TITULAR"].dropna().unique().tolist())
     seleccion_instructor = st.selectbox("Selecciona un instructor titular:", instructores)
 
     # Filtro de motivo de reemplazo
-    motivos = ["TODOS"] + sorted(data["MOTIVO DE REEMPLAZO"].dropna().unique().tolist())
+    motivos = ["TODOS"] + sorted(data_reemplazos["MOTIVO DE REEMPLAZO"].dropna().unique().tolist())
     seleccion_motivo = st.selectbox("Selecciona un motivo de reemplazo:", motivos)
 
     # Filtrar los datos según la selección
-    data_filtrada = data.copy()
+    data_filtrada = data_reemplazos.copy()
     
     if seleccion_instructor != "TODOS":
         data_filtrada = data_filtrada[data_filtrada["INSTRUCTOR TITULAR"] == seleccion_instructor]
@@ -52,5 +63,34 @@ if not data.empty:
     resumen.columns = ["Instructor Titular", "Número de Reemplazos"]
     st.dataframe(resumen)
 
+    # Agregar funcionalidad: Relacionar con clases totales y calcular % cumplimiento
+    if not data_clases_totales.empty:
+        # Contar reemplazos realizados por cada instructor titular
+        reemplazos_contados = data_reemplazos.groupby("USUARIO INSTRUCTOR TITULAR").size().reset_index(name="REEMPLAZOS REALIZADOS")
+
+        # Cruzar los datos con el archivo de clases totales
+        data_combinada = pd.merge(data_clases_totales, reemplazos_contados, on="USUARIO INSTRUCTOR TITULAR", how="left")
+
+        # Rellenar NaN en "REEMPLAZOS REALIZADOS" con 0 para instructores sin reemplazos
+        data_combinada["REEMPLAZOS REALIZADOS"] = data_combinada["REEMPLAZOS REALIZADOS"].fillna(0)
+
+        # Calcular el porcentaje de cumplimiento
+        data_combinada["% CUMPLIMIENTO"] = 100 - (data_combinada["REEMPLAZOS REALIZADOS"] / data_combinada["CLASES TOTALES 2024"]) * 100
+
+        # Mostrar la tabla combinada con el % de cumplimiento
+        st.subheader("Cumplimiento Anual por Instructor")
+        st.dataframe(data_combinada)
+
+        # Agregar opción para descargar los resultados
+        @st.cache_data
+        def convertir_a_excel(df):
+            return df.to_excel(index=False, engine="openpyxl")
+
+        st.download_button(
+            label="Descargar Resultados en Excel",
+            data=convertir_a_excel(data_combinada),
+            file_name="cumplimiento_anual_instructores.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 else:
-    st.warning("No se pudo cargar el archivo. Por favor, verifica la URL o el archivo Excel.")
+    st.warning("No se pudo cargar el archivo de reemplazos. Por favor, verifica la URL o el archivo Excel.")
