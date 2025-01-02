@@ -63,9 +63,11 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
         # Filtrar los datos para el instructor seleccionado
         datos_instructor = data_combinada[data_combinada["USUARIO INSTRUCTOR TITULAR"] == usuario_seleccionado]
 
-        # Mostrar los datos filtrados del instructor
+        # Mostrar el cumplimiento anual sin duplicar el nombre
         st.subheader(f"Cumplimiento Anual del Instructor: {seleccion_nombre}")
-        st.dataframe(datos_instructor)
+        st.dataframe(
+            datos_instructor[["USUARIO INSTRUCTOR TITULAR", "CLASES TOTALES 2024", "REEMPLAZOS REALIZADOS", "% CUMPLIMIENTO"]]
+        )
 
         # Crear gráfico circular del cumplimiento anual
         reemplazos = datos_instructor["REEMPLAZOS REALIZADOS"].iloc[0]
@@ -76,6 +78,11 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
             title=f"Cumplimiento Anual de {seleccion_nombre}"
         )
         st.plotly_chart(fig)
+
+        # Mostrar detalle de reemplazos solicitados
+        st.subheader("Detalle de Reemplazos Solicitados")
+        detalle_reemplazos = data_reemplazos[data_reemplazos["USUARIO INSTRUCTOR TITULAR"] == usuario_seleccionado]
+        st.dataframe(detalle_reemplazos)
 
 else:
     st.warning("No se pudieron cargar los datos. Por favor, verifica los archivos.")
