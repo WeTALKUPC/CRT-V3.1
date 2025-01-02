@@ -5,8 +5,11 @@ import plotly.express as px
 # Configurar el diseño en ancho completo
 st.set_page_config(layout="wide")
 
-# Título de la aplicación
-st.title("Dashboard de Cumplimiento por Feriado, Programa e Instructor")
+# Título centrado de la aplicación
+st.markdown(
+    "<h1 style='text-align: center;'>Sistema de Seguimiento y Cumplimiento de Instructores (CRT)</h1>",
+    unsafe_allow_html=True,
+)
 
 # URLs de los archivos Excel en GitHub (raw)
 url_reemplazos = "https://raw.githubusercontent.com/WeTALKUPC/CRT-V3.1/main/CONSOLIDADO%20REEMPLAZOS%202024%20V2.xlsx"
