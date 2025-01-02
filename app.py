@@ -73,11 +73,16 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
             "REEMPLAZOS REALIZADOS": "REEMPLAZOS SOLICITADOS"
         })
 
+        # Mostrar el texto de cumplimiento anual en grande y centrado
+        st.markdown(
+            f"<h2 style='text-align: center; width: 100%;'>{f'Cumplimiento Anual del Instructor: {seleccion_nombre}'}</h2>",
+            unsafe_allow_html=True,
+        )
+
         # Mostrar el cumplimiento anual y el gráfico circular en la misma fila con más espacio
         col1, col2 = st.columns([3, 2])  # Ajustar proporciones de las columnas
 
         with col1:
-            st.subheader(f"Cumplimiento Anual del Instructor: {seleccion_nombre}")
             st.dataframe(datos_instructor[["USUARIO INSTRUCTOR", "CLASES 2024", "REEMPLAZOS SOLICITADOS", "% CUMPLIMIENTO"]])
 
         with col2:
@@ -86,7 +91,6 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
             fig = px.pie(
                 names=["Clases Cumplidas", "Reemplazos Solicitados"],
                 values=[cumplimiento, reemplazos],
-                title=f"Cumplimiento Anual de {seleccion_nombre}"
             )
             st.plotly_chart(fig, use_container_width=True)
 
