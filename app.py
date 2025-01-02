@@ -35,10 +35,10 @@ def cargar_datos(url):
 
 # Selector de año
 st.subheader("Seleccione el Año de Análisis")
-anio_seleccionado = st.selectbox("Año:", options=[2024, 2025])
+anio_seleccionado = st.selectbox("Año:", options=["Por favor seleccione un año", 2024, 2025])
 
-# Cargar los datos correspondientes al año seleccionado
-if anio_seleccionado:
+if anio_seleccionado != "Por favor seleccione un año":
+    # Cargar los datos correspondientes al año seleccionado
     data_reemplazos = cargar_datos(urls_data[anio_seleccionado]["reemplazos"])
     data_clases_totales = cargar_datos(urls_data[anio_seleccionado]["clases_totales"])
 
@@ -132,17 +132,56 @@ if anio_seleccionado:
                     12: "DICIEMBRE",
                 }
             )
-            fig = px.bar(reemplazos_por_mes, x="MES", y="CANTIDAD", text="CANTIDAD", title="Reemplazos Atendidos por Mes")
+            reemplazos_por_mes["PORCENTAJE"] = (
+                reemplazos_por_mes["CANTIDAD"] / reemplazos_por_mes["CANTIDAD"].sum()
+            ) * 100
+            fig = go.Figure()
+            fig.add_trace(
+                go.Bar(
+                    x=reemplazos_por_mes["MES"],
+                    y=reemplazos_por_mes["CANTIDAD"],
+                    text=[
+                        f"{cantidad}<br>{porcentaje:.1f}%"
+                        for cantidad, porcentaje in zip(
+                            reemplazos_por_mes["CANTIDAD"], reemplazos_por_mes["PORCENTAJE"]
+                        )
+                    ],
+                    textposition="outside",
+                    marker=dict(color="blue"),
+                )
+            )
+            fig.update_layout(
+                title="Reemplazos Atendidos por Mes",
+                xaxis_title="Mes",
+                yaxis_title="Cantidad de Reemplazos",
+                template="plotly_white",
+            )
             st.plotly_chart(fig, use_container_width=True)
 
         elif grafico_seleccionado == "Reemplazos por Programa":
             reemplazos_por_programa = data_reemplazos.groupby("PROGRAMA").size().reset_index(name="CANTIDAD")
-            fig = px.bar(reemplazos_por_programa, x="PROGRAMA", y="CANTIDAD", text="CANTIDAD", title="Reemplazos por Programa")
+            fig = px.bar(
+                reemplazos_por_programa,
+                x="PROGRAMA",
+                y="CANTIDAD",
+                text="CANTIDAD",
+                title="Reemplazos por Programa",
+                color="PROGRAMA",
+                color_discrete_sequence=px.colors.qualitative.Set3,
+            )
             st.plotly_chart(fig, use_container_width=True)
 
         elif grafico_seleccionado == "Reemplazos por Motivo":
             reemplazos_por_motivo = data_reemplazos.groupby("MOTIVO DE REEMPLAZO").size().reset_index(name="CANTIDAD")
-            fig = px.bar(reemplazos_por_motivo, x="MOTIVO DE REEMPLAZO", y="CANTIDAD", text="CANTIDAD", title="Reemplazos por Motivo")
+            fig = px.bar(
+                reemplazos_por_motivo,
+                x="MOTIVO DE REEMPLAZO",
+                y="CANTIDAD",
+                text="CANTIDAD",
+                title="Reemplazos por Motivo",
+                color="MOTIVO DE REEMPLAZO",
+                color_discrete_sequence=px.colors.qualitative.Pastel,
+            )
             st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.error("No se pudieron cargar los datos. Verifica las URLs o los archivos.")
+else:
+    st.info("Por favor seleccione un año.")
