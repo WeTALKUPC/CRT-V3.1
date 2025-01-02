@@ -58,9 +58,19 @@ if not data_reemplazos.empty and not data_clases_totales.empty:
     # Crear filtros
     st.subheader("Filtros de Búsqueda")
 
-    # Filtro de instructor titular con nombres visibles
-    nombres_instructores = ["Seleccione un instructor"] + sorted(data_combinada["NOMBRE INSTRUCTOR"].dropna().unique().tolist())
-    seleccion_nombre = st.selectbox("Selecciona un instructor titular:", nombres_instructores)
+    # Opciones de búsqueda
+    nombres_instructores = sorted(data_combinada["NOMBRE INSTRUCTOR"].dropna().unique().tolist())
+
+    # Barra de búsqueda por nombre
+    st.write("Busca un instructor por nombre:")
+    termino_busqueda = st.text_input("Escribe el nombre del instructor:")
+    coincidencias = [nombre for nombre in nombres_instructores if termino_busqueda.lower() in nombre.lower()]
+
+    # Selector para nombres coincidentes
+    seleccion_nombre = st.selectbox(
+        "Selecciona un instructor de la lista:",
+        ["Seleccione un instructor"] + coincidencias,
+    )
 
     # Obtener el usuario del instructor seleccionado
     if seleccion_nombre != "Seleccione un instructor":
